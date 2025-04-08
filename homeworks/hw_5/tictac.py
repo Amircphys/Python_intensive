@@ -1,5 +1,15 @@
+from typing import List
 from collections import Counter
 from itertools import chain
+
+CORRECT_COORDINATES_MESSAGE = "Введены корректные координаты\n"
+WRONG_COORDINATES_MESSAGE = "Введены некорректные координаты - значение координат должно лежать в диапазоне [0, 2], пожалуйста введите корректные координаты\n"
+WRONG_CELL_MESSAGE = "Введены некорректные координаты - ячейка уже занята, пожалуйста введите корректные координаты\n"
+WRONG_NUMBER_COORDINATES_MESSAGE = (
+    "Число введенных координат должно равняться 2, пожалуйста введите две координаты\n"
+)
+DRAW_MESSAGE = "Draw in the game!!!\n"
+NEXT_STEP_MESSAGE = "next step...\n"
 
 
 class Player:
@@ -42,26 +52,28 @@ class TicTacGame:
 
     def validate_input(self, coordinates):
         if len(coordinates) != 2:
-            raise ValueError(
-                "Число введенных координат должно равняться 2, пожалуйста введите две координаты\n"
-            )
+            raise ValueError(WRONG_NUMBER_COORDINATES_MESSAGE)
         x, y = coordinates
         x, y = int(x), int(y)
-        if (not 0 <= x <= 3) or (not 0 <= y <= 3):
-            raise ValueError(
-                "Введены некорректные координаты - значение координат должно лежать в диапазоне [0, 2], пожалуйста введите корректные координаты\n"
-            )
+        if (not 0 <= x < 3) or (not 0 <= y < 3):
+            raise ValueError(WRONG_COORDINATES_MESSAGE)
         elif self.board[x][y] != self.empty_element:
-            raise ValueError(
-                "Введены некорректные координаты - ячейка уже занята, пожалуйста введите корректные координаты\n"
-            )
+            raise ValueError(WRONG_CELL_MESSAGE)
 
-    def check_input(self, coordinates):
+    def check_input(self, coordinates: List[int]) -> str:
+        """
+        Check the correctness of cell coordinates
+        Args:
+            coordinates (List[int]): the coordinates of cells
+
+        Returns:
+            str:  true_input if cell coordinates are correct, else the message of error
+        """
         try:
             self.validate_input(coordinates)
         except Exception as e:
             return e.args[0]
-        return "true_input"
+        return CORRECT_COORDINATES_MESSAGE
 
     def fill_board_cell(self, coordinates, player):
         x, y = coordinates
@@ -88,18 +100,18 @@ class TicTacGame:
             inp = input()
             inp = list(map(int, inp.split()))
 
-            while self.check_input(inp) != "true_input":
+            while self.check_input(inp) != CORRECT_COORDINATES_MESSAGE:
                 message = self.check_input(inp)
                 print(message, flush=True)
                 inp = list(
                     map(
-                        int,
-                        input(message).split(),
+                        lambda x: int(x.strip()),
+                        input().strip().split(),
                     )
                 )
             self.fill_board_cell(inp, temp_player)
             if self.check_fill_all_cells():
-                print(f"Draw in the game!!!", flush=True)
+                print(DRAW_MESSAGE, flush=True)
                 self.show_board()
                 return
             temp_player.update_ocuppied_states(inp)
@@ -109,7 +121,7 @@ class TicTacGame:
                 return
             self.show_board()
             start_idx += 1
-            print(f"next step...")
+            print(NEXT_STEP_MESSAGE, flush=True)
 
 
 if __name__ == "__main__":
