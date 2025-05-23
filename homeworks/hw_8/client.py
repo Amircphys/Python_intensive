@@ -18,21 +18,24 @@ class Client:
                     self.url_queue.put(url)
 
     def worker(self):
+        # Метод обработки для каждого потока
         while True:
+            # Получение URL из очереди
             url = self.url_queue.get()
-            if url is None:
+            if url is None:  # Сигнал к завершению
                 break
             
             try:
+                # Создание TCP-сокета
                 with socket.socket() as s:
-                    s.connect((self.host, self.port))
-                    s.send(url.encode())
-                    data = s.recv(4096).decode()
-                    print(f"{url}: {data}")
+                    s.connect((self.host, self.port))  # Подключение к серверу
+                    s.send(url.encode())  # Отправка URL
+                    data = s.recv(4096).decode()  # Получение ответа
+                    print(f"{url}: {data}")  # Вывод результата
             except Exception as e:
                 print(f"Failed {url}: {e}")
             finally:
-                self.url_queue.task_done()
+                self.url_queue.task_done()  # Отметка задачи как выполненной
 
     def run(self):
         threads = []
@@ -54,6 +57,5 @@ if __name__ == "__main__":
     parser.add_argument('threads', type=int, help='Threads count')
     parser.add_argument('url_file', help='Path to URLs file')
     args = parser.parse_args()
-    
-    client = Client('localhost', 8010, args.url_file, args.threads)
+    client = Client(host='localhost', port=8010, url_file=args.url_file, num_threads=args.threads)
     client.run()

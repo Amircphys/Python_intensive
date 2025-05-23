@@ -71,6 +71,5 @@ if __name__ == "__main__":
     parser.add_argument('-w', type=int, required=True, help='Workers count')
     parser.add_argument('-k', type=int, required=True, help='Top K words')
     args = parser.parse_args()
-    
-    server = Server('localhost', 8010, args.w, args.k)
+    server = Server(host='localhost', port=8010, num_workers=args.w, top_k=args.k)
     server.start()
